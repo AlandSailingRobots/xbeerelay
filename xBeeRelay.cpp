@@ -17,6 +17,20 @@ size_t xBeeRelay::write_to_string(void *ptr, size_t size, size_t count, void *st
   return size*count;
 }
 
+void xBeeRelay::doCurl(std::string url, std::string* response) {
+	if (m_curl) {
+		curl_easy_setopt(m_curl, CURLOPT_URL, url.c_str());
+		curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, write_to_string);
+		curl_easy_setopt(m_curl, CURLOPT_WRITEDATA, response);
+
+		CURLcode res = curl_easy_perform(m_curl);
+
+		if(res != CURLE_OK) {
+			throw ( std::string("Curl error: ") + curl_easy_strerror(res) ).c_str();
+		}
+	}
+}
+
 std::string xBeeRelay::receiveData() {
 	return m_xBee.receiveXMLData(m_fd);
 }
@@ -40,18 +54,30 @@ void xBeeRelay::pushLogsToServer(std::string data) {
 	std::string serverCall = "/?serv=pushLogs&id=sailbot&pwd=sailbot&data="+data;
 	std::string url = serverURL + serverCall;
 	if (data != "") {
-		if (m_curl) {
-			curl_easy_setopt(m_curl, CURLOPT_URL, url.c_str());
-			curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, write_to_string);
-			curl_easy_setopt(m_curl, CURLOPT_WRITEDATA, &response);
-
-			CURLcode res = curl_easy_perform(m_curl);
-
-			if(res != CURLE_OK) {
-				throw ( std::string("Curl error: ") + curl_easy_strerror(res) ).c_str();
-			} else {
-				std::cout << "|--Data pushed to server--|\n" << std::endl;
-			}	
-		}
+		doCurl(url, &response);
 	}
+}
+
+bool xBeeRelay::checkForConfigUpdates() {
+	std::string response = "";
+	std::string localURL = "10.168.4.105:80/Remote-sailing-robots/sync";
+	std::string serverCall = "/?serv=checkIfNewConfigs&id=boat02&pwd=sailbot";
+
+	std::string url = localURL + serverCall;
+
+	doCurl(url, &response);
+	
+	return stoi(response);
+}
+
+std::string xBeeRelay::getConfigsFromWeb() {
+	std::string response = "";
+	std::string localURL = "10.168.4.105:80/Remote-sailing-robots/sync";
+	std::string serverCall = "/?serv=getAllConfigs&id=boat02&pwd=sailbot";
+
+	std::string url = localURL + serverCall;
+
+	doCurl(url, &response);
+	
+	return response;
 }

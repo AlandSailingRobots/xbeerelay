@@ -20,9 +20,13 @@ int main() {
 
 		// push data to server
 		relay.pushLogsToServer(data);
-			
-		usleep(1000000);
-	
+
+		if (relay.checkForConfigUpdates()) {
+			std::string configs = relay.getConfigsFromWeb();
+			relay.relayData(configs);
+		}
+		
+		usleep(3000000);
 	}
 
 }
