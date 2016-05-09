@@ -2,7 +2,7 @@
 
 xBeeRelay::xBeeRelay() {
 	try {
-		m_fd = m_xBee.init(57600);
+		m_fd = m_xBee.init();
 	} catch (const char* e) {
 		std::cout << e << std::endl;
 	}
@@ -40,10 +40,12 @@ void xBeeRelay::relayData(std::string data) {
 }
 
 std::string xBeeRelay::extractMessage(std::string data) {
+	const int tagSize = 9;
+
 	if (data != "") {
 		unsigned first = data.find("<message>");
 		unsigned last = data.find("</message>", first);
-		return data.substr(first + 9, last - first - 9);
+		return data.substr(first + tagSize, last - first - tagSize);
 	}
 	return data;
 }
