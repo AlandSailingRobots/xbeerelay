@@ -7,22 +7,33 @@
 #                                                   #
 #####################################################
 
-CC = g++ 
-FLAGS = -Wall -pedantic -Werror -std=c++14 -I$(SAILINGROBOTS_HOME)
 
-LIBS = -lsqlite3 -lgps -lrt -lwiringPi -lcurl
+BUILD_DR 		= ../build/XbeeRemote
 
-SOURCES_RELAY 	= main.cpp xBeeRelay.cpp 
-HEADERS_RELAY 	= xBeeRelay.h 
-OBJ_RELAY 		= $(SAILINGROBOTS_HOME)/xBee/xBee.o 
+TARGET			=./XbeeRemote.run
 
-FILE_RELAY = xbeerelay
+SRC 			= main.cpp udpclient.cpp
+
+OBJECTS 		= $(addprefix $(BUILD_DIR)/, $(SRC:.cpp=.o))
+OBJECTS 		+= ../build/xBee/Xbee.o ../build/utility/SysClock.o ../build/SystemServices/Logger.o ../build/Messages/MessageSerialiser.o ../build/Messages/MessageDeserialiser.o
+
+INCLUDE			= -I../
 
 
-all : $(FILE_RELAY)
-	
-$(FILE_RELAY) : $(SOURCES_RELAY) $(HEADERS_RELAY)
-	 $(CC) $(SOURCES_RELAY) $(OBJ_RELAY) $(FLAGS) $(LIBS) -o $(FILE_RELAY)
+WIRING_PI = libwiringPi.so
+
+all : $(TARGET)
+	 
+$(TARGET): $(OBJECTS)
+	@mv ../$(WIRING_PI) $(WIRING_PI)
+	@$(CXX) $(CPPFLAGS) $(OBJECTS) -Wl,-rpath=./,-rpath=../ $(WIRING_PI) -o $(TARGET) $(LIBS) -lrt
+	@echo Built $(TARGET)
+	 
+# Compile CPP files into the build folder
+$(BUILD_DIR)/%.o:%.cpp
+	@mkdir -p $(dir $@)
+	@echo Compiling CPP File: $@
+	$(CXX) -c $(CPPFLAGS) $(INC) $(INCLUDE) -o ./$@ $< -DTOOLCHAIN=$(TOOLCHAIN) $(LIBS)
 
 clean :
 	rm -f ./*.o
