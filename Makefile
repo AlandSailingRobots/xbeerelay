@@ -15,7 +15,7 @@ TARGET			=./XbeeRemote.run
 SRC 			= main.cpp udpclient.cpp
 
 OBJECTS 		= $(addprefix $(BUILD_DIR)/, $(SRC:.cpp=.o))
-OBJECTS 		+= ../build/xBee/Xbee.o ../build/utility/SysClock.o ../build/SystemServices/Logger.o ../build/Messages/MessageSerialiser.o ../build/Messages/MessageDeserialiser.o
+OBJECTS 		+= ../build/Network/DataLink.o ../build/Network/LinuxSerialDataLink.o ../build/Network/XbeePacketNetwork.o ../build/utility/SysClock.o ../build/SystemServices/Logger.o ../build/Messages/MessageSerialiser.o ../build/Messages/MessageDeserialiser.o
 
 INCLUDE			= -I../
 
