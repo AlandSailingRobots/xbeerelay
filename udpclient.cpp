@@ -72,7 +72,7 @@ void udpwrite(const char *s,...){
     char buf[1024];
     sprintf(buf,"time=%f ",gettime());
     vsnprintf(buf+strlen(buf),1024-strlen(buf),s,args);
-    printf("%s\n",buf);
+    //printf("%s\n",buf);
     udpSend(serverAddr,outport,buf); // SEND TO 
     va_end(args);
 }

@@ -1,5 +1,7 @@
 //#include "xBeeRelay.h"
 #include "../xBee/Xbee.h"
+#include "Network/XbeePacketNetwork.h"
+#include "Network/LinuxSerialDataLink.h"
 #include <stdio.h>
 #include "../SystemServices/Logger.h"
 #include "../utility/SysClock.h"
@@ -82,6 +84,10 @@ void printMessage(Message* msgPtr, MessageDeserialiser& deserialiser)
 				Logger::info("Message: %s - Unix Time: %u Lat: %.7f Long: %.7f Compass: %d Speed: %f Wind Dir: %f Wind Speed: %f", msgToString(MessageType::VesselState).c_str(), unixTime, msg.latitude(), msg.longitude(), msg.compassHeading(), msg.speed(), msg.windDir(), msg.windSpeed());
 				udpwrite("heading=%d speed=%f lat=%.7f lon=%.7f", msg.compassHeading(), msg.speed(), msg.latitude(), msg.longitude());
 			}
+			else
+			{
+				Logger::info("Not valid");
+			}
 		}
 		break;
 		case MessageType::WaypointData:
@@ -107,6 +113,7 @@ void printMessage(Message* msgPtr, MessageDeserialiser& deserialiser)
 		}
 		break;
 		default:
+			Logger::info("Packet: %s", msgToString(msgPtr->messageType()).c_str());
 			return;
 	}
 }
@@ -129,15 +136,18 @@ int main() {
 	bool offline = true;
 	//xBeeRelay relay;
 	std::string data = "";
-	Xbee xbee(true);
-	xbee.setIncomingCallback(incoming);
+
+	LinuxSerialDataLink serialDataLink("/dev/ttyUSB0", XBEE_BAUD_RATE);
+	serialDataLink.initialise(XBEE_PACKET_SIZE);
+
+	XbeePacketNetwork packetNetwork(serialDataLink, true);
+	packetNetwork.setIncomingCallback(incoming);
 
 	lastMessage = SysClock::unixTime();
 
-	xbee.init("/dev/ttyUSB0", XBEE_BAUD_RATE);
 	while (true) { 
 
-		xbee.processRadioMessages();
+		packetNetwork.processRadioMessages();
 
 		if(SysClock::unixTime() - lastMessage > OFFLINE_TIME)
 		{
@@ -153,27 +163,6 @@ int main() {
 			udpwrite("offline=0");
 			offline = false;
 		}
-
-		// receive data from r-pi
-		/*data = relay.receiveData();
-		std::cout << "Sent data: " << data << std::endl;
-
-		// parse extract data between <message></message>
-		data = relay.extractMessage(data);
-		std::cout << "Extracted data: " << data << "\n" << std::endl;	
-		
-		// insert data in local database
-
-
-		// push data to server
-		relay.pushLogsToServer(data);
-
-		if (relay.checkForConfigUpdates()) {
-			std::string configs = relay.getConfigsFromWeb();
-			relay.relayData(configs);
-		}
-		
-		usleep(3000000);*/
 	}
 
 }
