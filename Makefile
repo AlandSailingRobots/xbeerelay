@@ -12,7 +12,9 @@ BUILD_DR 		= ../build/XbeeRemote
 
 TARGET			=./XbeeRemote.run
 
-SRC 			= main.cpp WindowsSerialDataLink.cpp
+
+SRC 			= main.cpp WindowsSerialDataLink.cpp XbeeRemote.cpp
+
 
 OBJECTS 		= $(addprefix $(BUILD_DIR)/, $(SRC:.cpp=.o))
 OBJECTS 		+= ../build/Network/DataLink.o ../build/Network/XbeePacketNetwork.o ../build/utility/SysClock.o ../build/SystemServices/Logger.o ../build/Messages/MessageSerialiser.o ../build/Messages/MessageDeserialiser.o
