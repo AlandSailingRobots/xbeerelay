@@ -1,7 +1,5 @@
 //#include "xBeeRelay.h"
-#include "../xBee/Xbee.h"
 #include "Network/XbeePacketNetwork.h"
-#include "Network/LinuxSerialDataLink.h"
 #include <stdio.h>
 #include "../SystemServices/Logger.h"
 #include "../utility/SysClock.h"
@@ -14,6 +12,7 @@
 #include "../Messages/WaypointDataMsg.h"
 #include "../Messages/CourseDataMsg.h"
 #include "udpclient.h"
+#include "WindowsSerialDataLink.h"
 
 
 unsigned long lastMessage = 0;
@@ -82,7 +81,7 @@ void printMessage(Message* msgPtr, MessageDeserialiser& deserialiser)
 			{
 				unsigned int unixTime = (unsigned)(int)msg.unixTime();
 				Logger::info("Message: %s - Unix Time: %u Lat: %.7f Long: %.7f Compass: %d Speed: %f Wind Dir: %f Wind Speed: %f", msgToString(MessageType::VesselState).c_str(), unixTime, msg.latitude(), msg.longitude(), msg.compassHeading(), msg.speed(), msg.windDir(), msg.windSpeed());
-				udpwrite("heading=%d speed=%f lat=%.7f lon=%.7f", msg.compassHeading(), msg.speed(), msg.latitude(), msg.longitude());
+				//udpwrite("heading=%d speed=%f lat=%.7f lon=%.7f", msg.compassHeading(), msg.speed(), msg.latitude(), msg.longitude());
 			}
 			else
 			{
@@ -97,7 +96,7 @@ void printMessage(Message* msgPtr, MessageDeserialiser& deserialiser)
 			if(msg.isValid())
 			{
 				Logger::info("Message: %s - ID: %d Lat: %.7lf Lon: .7lf", msgToString(MessageType::WaypointData).c_str(), msg.nextId(), msg.nextLatitude(), msg.nextLongitude());
-				udpwrite("wpnum=%d ", msg.nextId());
+				//udpwrite("wpnum=%d ", msg.nextId());
 			}
 		}
 		break;
@@ -108,7 +107,7 @@ void printMessage(Message* msgPtr, MessageDeserialiser& deserialiser)
 			if(msg.isValid())
 			{
 				Logger::info("Message: %s - True Wind Dir: %f Distance To WP: %f Course To WP: %f", msgToString(MessageType::CourseData).c_str(), msg.trueWindDir(), msg.distanceToWP(), msg.courseToWP());
-				udpwrite("twd=%f dtw=%f ctw=%f", msg.trueWindDir(), msg.distanceToWP(), msg.courseToWP());
+				//udpwrite("twd=%f dtw=%f ctw=%f", msg.trueWindDir(), msg.distanceToWP(), msg.courseToWP());
 			}
 		}
 		break;
@@ -137,7 +136,7 @@ int main() {
 	//xBeeRelay relay;
 	std::string data = "";
 
-	LinuxSerialDataLink serialDataLink("/dev/ttyUSB0", XBEE_BAUD_RATE);
+	WindowsSerialDataLink serialDataLink("COM3", XBEE_BAUD_RATE);
 	serialDataLink.initialise(XBEE_PACKET_SIZE);
 
 	XbeePacketNetwork packetNetwork(serialDataLink, true);
@@ -154,13 +153,13 @@ int main() {
 			if(not offline)
 			{
 				offline = true;
-				udpwrite("offline=1");
+				//udpwrite("offline=1");
 			}
 
 		}
 		else if(offline)
 		{
-			udpwrite("offline=0");
+			//udpwrite("offline=0");
 			offline = false;
 		}
 	}
