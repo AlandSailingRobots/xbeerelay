@@ -14,13 +14,14 @@
 #pragma once
 
 
-#include "Network/XbeePacketNetwork.h"
-#include "Network/DataLink.h"
+#include "../Network/XbeePacketNetwork.h"
+#include "../Network/DataLink.h"
+#include "../Messages/Message.h"
 
 
 class XbeeRemote {
 public:
-	XbeeRemote();
+	XbeeRemote(std::string portName);
 	~XbeeRemote();
 
 	///----------------------------------------------------------------------------------
@@ -34,13 +35,20 @@ public:
 	///----------------------------------------------------------------------------------
 	void run();
 
+	void printMessage(Message* msgPtr, MessageDeserialiser& deserialiser);
+
+	void sendToUI(Message* msgPtr, MessageDeserialiser& deserialiser);
+
 	///----------------------------------------------------------------------------------
 	/// Called when a message is received over the Xbee network
 	///----------------------------------------------------------------------------------
-	static void incomingData(uint8_t* data, uint8_t size)
+	static void incomingData(uint8_t* data, uint8_t size);
 
 private:
+	static XbeeRemote*	m_Instance;
 	DataLink*			m_DataLink;
 	XbeePacketNetwork* 	m_Network;
-	bool 				m_Connected;
+	std::string			m_PortName;
+	unsigned long		m_LastReceived;
+	bool				m_Connected;
 };
