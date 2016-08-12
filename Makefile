@@ -8,25 +8,49 @@
 #####################################################
 
 
+
+#####################################################
+# Files
+#####################################################
+
+
 BUILD_DR 		= ../build/XbeeRemote
 
-TARGET			=./XbeeRemote.run
+SRC 			= main.cpp XbeeRemote.cpp
 
-SRC 			= main.cpp udpclient.cpp XbeeRemote.cpp
+ifeq ($(TOOLCHAIN),win)
 
-OBJECTS 		= $(addprefix $(BUILD_DIR)/, $(SRC:.cpp=.o))
-OBJECTS 		+= ../build/Network/DataLink.o ../build/Network/LinuxSerialDataLink.o ../build/Network/XbeePacketNetwork.o ../build/utility/SysClock.o ../build/SystemServices/Logger.o ../build/Messages/MessageSerialiser.o ../build/Messages/MessageDeserialiser.o
+TARGET			= ./XbeeRemote.exe
+SRC				+= WindowsSerialDataLink.cpp
+
+else
+
+TARGET			= ./XbeeRemote.run
+SRC				+= udpclient.cpp
+OBJECTS			= ../build/Network/LinuxSerialDataLink.o
+
+WIRING_PI 		= libwiringPi.so
+MOVE_LIB		= @mv ../$(WIRING_PI) $(WIRING_PI)
+
+endif
+
+
+OBJECTS 		+= $(addprefix $(BUILD_DIR)/, $(SRC:.cpp=.o))
+OBJECTS 		+= ../build/Network/DataLink.o ../build/Network/XbeePacketNetwork.o ../build/utility/SysClock.o ../build/SystemServices/Logger.o ../build/Messages/MessageSerialiser.o ../build/Messages/MessageDeserialiser.o
 
 INCLUDE			= -I../
 
 
-WIRING_PI = libwiringPi.so
+#####################################################
+# Rules
+#####################################################
+
 
 all : $(TARGET)
 	 
 $(TARGET): $(OBJECTS)
-	@mv ../$(WIRING_PI) $(WIRING_PI)
-	@$(CXX) $(CPPFLAGS) $(OBJECTS) -Wl,-rpath=./,-rpath=../ $(WIRING_PI) -o $(TARGET) $(LIBS) -lrt
+	$(MOVE_LIB)
+	@$(CXX) $(CPPFLAGS) $(OBJECTS) -Wl,-rpath=./,-rpath=../ $(WIRING_PI) -o $(TARGET) $(LIBS)
 	@echo Built $(TARGET)
 	 
 # Compile CPP files into the build folder
