@@ -63,7 +63,7 @@ bool XbeeRemote::initialise()
 	m_DataLink = new LinuxSerialDataLink(m_PortName.c_str(), XBEE_BAUD_RATE);
 
 #elif _WIN32
-
+	m_DataLink = new WindowsSerialDataLink(m_PortName.c_str(), XBEE_BAUD_RATE);	
 #endif
 
 	if(m_DataLink->initialise(XBEE_PACKET_SIZE))
